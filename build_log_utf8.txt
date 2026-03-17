@@ -1,0 +1,29 @@
+﻿
+> my_yield@0.1.0 build
+> react-scripts build
+
+node.exe : (node:12936) [DEP0176] 
+DeprecationWarning: fs.F_OK is deprecated, 
+use fs.constants.F_OK instead
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified:  
+   ((node:12936) [D...ts.F_OK instead:Strin  
+  g) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandE 
+   rror
+ 
+(Use `node --trace-deprecation ...` to show 
+where the warning was created)
+Creating an optimized production build...
+Browserslist: caniuse-lite is outdated. 
+Please run next command `npm update`
+Failed to compile.
+
+./src/App.tsx
+Syntax error: Expression expected (325:38)
+
+

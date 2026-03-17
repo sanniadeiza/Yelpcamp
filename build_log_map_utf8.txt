@@ -1,0 +1,38 @@
+﻿
+> my_yield@0.1.0 build
+> react-scripts build
+
+node.exe : (node:7616) [DEP0176] 
+DeprecationWarning: fs.F_OK is deprecated, 
+use fs.constants.F_OK instead
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified:  
+   ((node:7616) [DE...ts.F_OK instead:Strin  
+  g) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandE 
+   rror
+ 
+(Use `node --trace-deprecation ...` to show 
+where the warning was created)
+Creating an optimized production build...
+Browserslist: caniuse-lite is outdated. 
+Please run next command `npm update`
+Failed to compile.
+
+C:/Users/user/Desktop/Yelp camp/my_yield/src/components/LocationMap.tsx
+TypeScript error in C:/Users/user/Desktop/Yelp camp/my_yield/src/components/LocationMap.tsx(22,36):
+Element implicitly has an 'any' type because index expression is not of type 'number'.  TS7015
+
+    20 | 
+    21 |   useEffect(() => {
+  > 22 |     if (!mapRef.current || !window['L']) return;
+       |                                    ^
+    23 | 
+    24 |     // Initialize map if not already initialized
+    25 |     if (!mapInstance.current) {
+
+
