@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-yelp1-dev-6bb49-authRole",
+      "UnauthRoleArn": "arn:aws:iam::037613907681:role/amplify-yelp1-dev-6bb49-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::037613907681:role/amplify-yelp1-dev-6bb49-authRole",
+      "Region": "eu-north-1",
+      "DeploymentBucketName": "amplify-yelp1-dev-6bb49-deployment",
+      "UnauthRoleName": "amplify-yelp1-dev-6bb49-unauthRole",
+      "StackName": "amplify-yelp1-dev-6bb49",
+      "StackId": "arn:aws:cloudformation:eu-north-1:037613907681:stack/amplify-yelp1-dev-6bb49/c74cc770-3428-11f1-a1f3-0e9a4d118e39",
+      "AmplifyAppId": "d1he9u1f0j0itc"
+    },
+    "categories": {
+      "auth": {
+        "yelp1a3fc7fbd": {}
+      },
+      "api": {
+        "yelp1": {}
+      }
+    }
+  }
+}
