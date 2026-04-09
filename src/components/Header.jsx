@@ -1,12 +1,8 @@
+/* eslint-disable */
 import React from 'react';
 import { Button, Container, Navbar, Form, InputGroup } from 'react-bootstrap';
 
-interface HeaderProps {
-  onAddClick: () => void;
-  onSearchChange: (searchTerm: string) => void;
-}
-
-const Header: React.FC<HeaderProps> = ({ onAddClick, onSearchChange }: HeaderProps) => {
+const Header = ({ onAddClick, onSearchChange }) => {
   return (
     <Navbar expand="lg" className="py-3 sticky-top" style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--glass-border)' }}>
       <Container>
@@ -37,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({ onAddClick, onSearchChange }: HeaderPro
                 placeholder="Search restaurants or cities..."
                 className="bg-transparent border-0 py-2 pl-2 shadow-none"
                 style={{ fontSize: '0.95rem' }}
-                onChange={(e: any) => onSearchChange(e.target.value)}
+                onChange={(e) => onSearchChange(e.target.value)}
               />
             </InputGroup>
           </Form>

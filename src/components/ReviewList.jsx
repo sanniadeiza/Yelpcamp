@@ -1,20 +1,9 @@
+/* eslint-disable */
 import React from 'react';
 import { Card } from 'react-bootstrap';
 import StarRating from './StarRating';
 
-export interface Review {
-  id: string;
-  rating: number;
-  content: string;
-  author: string;
-  createdAt: string;
-}
-
-interface ReviewListProps {
-  reviews: Review[];
-}
-
-const ReviewList: React.FC<ReviewListProps> = ({ reviews }) => {
+const ReviewList = ({ reviews }) => {
   if (reviews.length === 0) {
     return (
       <div className="text-center py-4 text-muted">

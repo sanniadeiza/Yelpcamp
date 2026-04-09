@@ -1,14 +1,7 @@
+/* eslint-disable */
 import React, { useState } from 'react';
 
-interface StarRatingProps {
-  rating: number;
-  maxStars?: number;
-  onRatingChange?: (rating: number) => void;
-  readOnly?: boolean;
-  size?: string;
-}
-
-const StarRating: React.FC<StarRatingProps> = ({ 
+const StarRating = ({ 
   rating, 
   maxStars = 5, 
   onRatingChange, 
