@@ -4,6 +4,7 @@ frontend:
     preBuild:
       commands:
         - npm install
+        - if [ ! -f src/aws-exports.js ]; then echo "export default {};" > src/aws-exports.js; fi
     build:
       commands:
         - npm run build
