@@ -17,19 +17,7 @@ import StarRating from './components/StarRating';
 import ReviewList from './components/ReviewList';
 import LocationMap from './components/LocationMap';
 
-const finalConfig = {
-  ...awsConfig,
-  aws_project_region: process.env.REACT_APP_REGION || awsConfig.aws_project_region || 'eu-north-1',
-  aws_cognito_region: process.env.REACT_APP_REGION || awsConfig.aws_cognito_region || 'eu-north-1',
-  aws_user_pools_id: process.env.REACT_APP_USER_POOL_ID || awsConfig.aws_user_pools_id,
-  aws_user_pools_web_client_id: process.env.REACT_APP_USER_CLIENT_ID || awsConfig.aws_user_pools_web_client_id,
-  aws_appsync_graphqlEndpoint: process.env.REACT_APP_GRAPHQL_ENDPOINT || awsConfig.aws_appsync_graphqlEndpoint,
-  aws_appsync_region: process.env.REACT_APP_REGION || awsConfig.aws_appsync_region || 'eu-north-1',
-  aws_appsync_authenticationType: process.env.REACT_APP_AUTH_TYPE || awsConfig.aws_appsync_authenticationType,
-  aws_appsync_apiKey: process.env.REACT_APP_API_KEY || awsConfig.aws_appsync_apiKey,
-};
-
-Amplify.configure(finalConfig);
+Amplify.configure(awsConfig);
 
 const initialState = {
   restaurants: [],
@@ -158,9 +146,11 @@ const App = () => {
     dispatch({ type: 'SET_CREATING', payload: true });
     dispatch({ type: 'SET_ERROR', payload: null });
     try {
-      await API.graphql(
-        graphqlOperation(createRestaurant, { input: { name, description, city } })
-      );
+      await API.graphql({
+        query: createRestaurant,
+        variables: { input: { name, description, city } },
+        authMode: 'API_KEY'
+      });
       setShowModal(false);
       dispatch({ type: 'SET_CREATING', payload: false });
     } catch (err) {
