@@ -7,8 +7,8 @@ import { Button, Col, Container, Form, Row, Modal, Badge } from 'react-bootstrap
 
 import './App.css';
 import awsConfig from './aws-exports.js';
-import { createRestaurant, deleteRestaurant } from './graphql/mutations';
-import { listRestaurants } from './graphql/queries';
+import { createRestaurant, deleteRestaurant, createReview } from './graphql/mutations';
+import { listRestaurants, reviewsByRestaurantID } from './graphql/queries';
 import { onCreateRestaurant, onDeleteRestaurant } from './graphql/subscriptions';
 
 import Header from './components/Header';
@@ -30,6 +30,12 @@ const initialState = {
   creating: false,
   error: null,
   fetchError: null,
+  reviews: [],
+  reviewLoading: false,
+  showReviewModal: false,
+  reviewFormData: { rating: 5, content: '' },
+  reviewCreating: false,
+  reviewError: null,
 };
 
 const reducer = (state, action) => {
@@ -58,6 +64,18 @@ const reducer = (state, action) => {
       return { ...state, error: action.payload };
     case 'SET_FETCH_ERROR':
       return { ...state, fetchError: action.payload };
+    case 'SET_REVIEWS':
+      return { ...state, reviews: action.payload, reviewLoading: false };
+    case 'SET_REVIEW_LOADING':
+      return { ...state, reviewLoading: action.payload };
+    case 'SET_SHOW_REVIEW_MODAL':
+      return { ...state, showReviewModal: action.payload, reviewError: null };
+    case 'SET_REVIEW_FORM_DATA':
+      return { ...state, reviewFormData: { ...state.reviewFormData, ...action.payload } };
+    case 'SET_REVIEW_CREATING':
+      return { ...state, reviewCreating: action.payload };
+    case 'SET_REVIEW_ERROR':
+      return { ...state, reviewError: action.payload };
     default:
       return state;
   }
@@ -114,6 +132,33 @@ const App = () => {
     }, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [state.searchTerm]);
+
+  useEffect(() => {
+    if (state.selectedRestaurant) {
+      getReviewList(state.selectedRestaurant.id);
+    } else {
+      dispatch({ type: 'SET_REVIEWS', payload: [] });
+    }
+  }, [state.selectedRestaurant]);
+
+  const getReviewList = async (restaurantID) => {
+    dispatch({ type: 'SET_REVIEW_LOADING', payload: true });
+    try {
+      const response = await API.graphql({
+        query: reviewsByRestaurantID,
+        variables: {
+          restaurantID,
+          sortDirection: 'DESC',
+          limit: 10,
+        },
+        authMode: 'API_KEY'
+      });
+      dispatch({ type: 'SET_REVIEWS', payload: response.data.reviewsByRestaurantID.items });
+    } catch (e) {
+      console.error('Error fetching reviews:', e);
+      dispatch({ type: 'SET_REVIEW_LOADING', payload: false });
+    }
+  };
 
   const getRestaurantList = async (search = '', nextToken = null) => {
     dispatch({ type: 'SET_LOADING', payload: true });
@@ -209,6 +254,42 @@ const App = () => {
       console.error('Error deleting restaurant:', err);
       dispatch({ type: 'SET_CREATING', payload: false });
       alert(err.errors ? err.errors[0].message : err.message || 'Failed to delete restaurant');
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!state.selectedRestaurant) return;
+    
+    dispatch({ type: 'SET_REVIEW_CREATING', payload: true });
+    try {
+      const { rating, content } = state.reviewFormData;
+      // Get current user for author name
+      const user = await Amplify.Auth.currentAuthenticatedUser();
+      const author = user.username || 'Anonymous User';
+      
+      await API.graphql({
+        query: createReview,
+        variables: {
+          input: {
+            restaurantID: state.selectedRestaurant.id,
+            rating,
+            content,
+            author
+          }
+        },
+        authMode: 'API_KEY'
+      });
+      
+      dispatch({ type: 'SET_SHOW_REVIEW_MODAL', payload: false });
+      dispatch({ type: 'SET_REVIEW_FORM_DATA', payload: { rating: 5, content: '' } });
+      dispatch({ type: 'SET_REVIEW_CREATING', payload: false });
+      // Refresh reviews
+      getReviewList(state.selectedRestaurant.id);
+    } catch (err) {
+      console.error('Error creating review:', err);
+      dispatch({ type: 'SET_REVIEW_CREATING', payload: false });
+      dispatch({ type: 'SET_REVIEW_ERROR', payload: err.errors ? err.errors[0].message : err.message || 'Failed to submit review' });
     }
   };
 
@@ -422,13 +503,21 @@ const App = () => {
 
           <hr className="my-4" style={{ borderColor: 'var(--glass-border)' }} />
 
-          <ReviewList reviews={[
-            { id: '1', rating: 5, content: 'Absolutely phenomenal experience! The atmosphere was electric and the food was divine.', author: 'Alex Johnson', createdAt: new Date().toISOString() },
-            { id: '2', rating: 4, content: 'Great service and wonderful food. A must-visit for anyone in the city.', author: 'Sarah Miller', createdAt: new Date(Date.now() - 86400000).toISOString() },
-          ]} />
+          {state.reviewLoading ? (
+            <div className="text-center py-4">
+              <span className="spinner" />
+            </div>
+          ) : (
+            <ReviewList reviews={state.reviews} />
+          )}
 
           <div className="d-grid gap-2 mt-4">
-            <Button className="premium-btn">Write a Review</Button>
+            <Button 
+              className="premium-btn" 
+              onClick={() => dispatch({ type: 'SET_SHOW_REVIEW_MODAL', payload: true })}
+            >
+              Write a Review
+            </Button>
             <Button 
               variant="outline-danger" 
               className="premium-btn py-2" 
@@ -439,6 +528,46 @@ const App = () => {
               {state.creating ? 'Removing...' : '🗑 Remove Restaurant'}
             </Button>
           </div>
+        </Modal.Body>
+      </Modal>
+
+      {/* Write Review Modal */}
+      <Modal 
+        show={state.showReviewModal} 
+        onHide={() => dispatch({ type: 'SET_SHOW_REVIEW_MODAL', payload: false })}
+        centered
+      >
+        <Modal.Header closeButton className="border-0">
+          <Modal.Title style={{ fontWeight: 700 }}>Write a Review</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-4">
+          <Form onSubmit={handleReviewSubmit}>
+            {state.reviewError && <div className="alert alert-danger mb-4">{state.reviewError}</div>}
+            <div className="text-center mb-4">
+              <div className="mb-2 text-muted" style={{ fontSize: '0.9rem' }}>Overall Rating</div>
+              <StarRating 
+                rating={state.reviewFormData.rating} 
+                size="2.5rem" 
+                onRatingChange={(rating) => dispatch({ type: 'SET_REVIEW_FORM_DATA', payload: { rating } })}
+              />
+            </div>
+            <Form.Group className="mb-4">
+              <Form.Label>Your Experience</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                placeholder="What was the food like? How was the service?"
+                value={state.reviewFormData.content}
+                onChange={(e) => dispatch({ type: 'SET_REVIEW_FORM_DATA', payload: { content: e.target.value } })}
+                required
+              />
+            </Form.Group>
+            <div className="d-grid">
+              <Button type="submit" className="premium-btn" disabled={state.reviewCreating}>
+                {state.reviewCreating ? 'Submitting...' : 'Post Review'}
+              </Button>
+            </div>
+          </Form>
         </Modal.Body>
       </Modal>
     </div>
