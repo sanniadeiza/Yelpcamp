@@ -36,6 +36,7 @@ const initialState = {
   reviewFormData: { rating: 5, content: '' },
   reviewCreating: false,
   reviewError: null,
+  listFetchError: null,
 };
 
 const reducer = (state, action) => {
@@ -76,6 +77,8 @@ const reducer = (state, action) => {
       return { ...state, reviewCreating: action.payload };
     case 'SET_REVIEW_ERROR':
       return { ...state, reviewError: action.payload };
+    case 'SET_LIST_FETCH_ERROR':
+      return { ...state, listFetchError: action.payload };
     default:
       return state;
   }
@@ -154,8 +157,10 @@ const App = () => {
         authMode: 'API_KEY'
       });
       dispatch({ type: 'SET_REVIEWS', payload: response.data.reviewsByRestaurantID.items });
-    } catch (e) {
-      console.error('Error fetching reviews:', e);
+      dispatch({ type: 'SET_LIST_FETCH_ERROR', payload: null });
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+      dispatch({ type: 'SET_LIST_FETCH_ERROR', payload: err.errors ? err.errors[0].message : err.message || 'Failed to fetch reviews' });
       dispatch({ type: 'SET_REVIEW_LOADING', payload: false });
     }
   };
@@ -506,6 +511,14 @@ const App = () => {
           {state.reviewLoading ? (
             <div className="text-center py-4">
               <span className="spinner" />
+            </div>
+          ) : state.listFetchError ? (
+            <div className="alert alert-warning p-3 text-center" style={{ borderRadius: '12px', fontSize: '0.9rem' }}>
+              <p className="mb-1" style={{ fontWeight: 600 }}>Could not load reviews</p>
+              <p className="mb-1">{state.listFetchError}</p>
+              <Button variant="link" size="sm" onClick={() => getReviewList(state.selectedRestaurant.id)} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                ↻ Try again
+              </Button>
             </div>
           ) : (
             <ReviewList reviews={state.reviews} />
