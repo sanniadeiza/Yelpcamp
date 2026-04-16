@@ -7,9 +7,9 @@ import { Button, Col, Container, Form, Row, Modal, Badge } from 'react-bootstrap
 
 import './App.css';
 import awsConfig from './aws-exports.js';
-import { createRestaurant } from './graphql/mutations';
+import { createRestaurant, deleteRestaurant } from './graphql/mutations';
 import { listRestaurants } from './graphql/queries';
-import { onCreateRestaurant } from './graphql/subscriptions';
+import { onCreateRestaurant, onDeleteRestaurant } from './graphql/subscriptions';
 
 import Header from './components/Header';
 import RestaurantCard from './components/RestaurantCard';
@@ -40,6 +40,8 @@ const reducer = (state, action) => {
       return { ...state, restaurants: [...state.restaurants, ...action.payload.items], nextToken: action.payload.nextToken, loading: false };
     case 'SUBSCRIPTION':
       return { ...state, restaurants: [action.payload, ...state.restaurants] };
+    case 'DELETE_SUBSCRIPTION':
+      return { ...state, restaurants: state.restaurants.filter(r => r.id !== action.payload.id) };
     case 'SET_FORM_DATA':
       return { ...state, formData: { ...state.formData, ...action.payload } };
     case 'SET_SEARCH_TERM':
@@ -89,7 +91,20 @@ const App = () => {
       },
     });
 
-    return () => subscription.unsubscribe();
+    const deleteSub = API.graphql({
+      query: onDeleteRestaurant,
+      authMode: 'API_KEY'
+    }).subscribe({
+      next: (eventData) => {
+        const payload = eventData.value.data.onDeleteRestaurant;
+        dispatch({ type: 'DELETE_SUBSCRIPTION', payload });
+      },
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      deleteSub.unsubscribe();
+    };
   }, []);
 
   // Debounced search effect
@@ -173,6 +188,27 @@ const App = () => {
       console.error('Error creating restaurant:', err);
       dispatch({ type: 'SET_CREATING', payload: false });
       dispatch({ type: 'SET_ERROR', payload: err.errors ? err.errors[0].message : err.message || 'Failed to create restaurant' });
+    }
+  };
+
+  const deleteExistingRestaurant = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this restaurant?')) return;
+    
+    dispatch({ type: 'SET_CREATING', payload: true });
+    try {
+      await API.graphql({
+        query: deleteRestaurant,
+        variables: { input: { id } },
+        authMode: 'API_KEY'
+      });
+      dispatch({ type: 'SET_SELECTED_RESTAURANT', payload: null });
+      dispatch({ type: 'SET_CREATING', payload: false });
+      // The subscription will update the list, but we can also refresh manually
+      getRestaurantList();
+    } catch (err) {
+      console.error('Error deleting restaurant:', err);
+      dispatch({ type: 'SET_CREATING', payload: false });
+      alert(err.errors ? err.errors[0].message : err.message || 'Failed to delete restaurant');
     }
   };
 
@@ -391,8 +427,17 @@ const App = () => {
             { id: '2', rating: 4, content: 'Great service and wonderful food. A must-visit for anyone in the city.', author: 'Sarah Miller', createdAt: new Date(Date.now() - 86400000).toISOString() },
           ]} />
 
-          <div className="d-grid mt-4">
+          <div className="d-grid gap-2 mt-4">
             <Button className="premium-btn">Write a Review</Button>
+            <Button 
+              variant="outline-danger" 
+              className="premium-btn py-2" 
+              style={{ borderColor: '#ff4d4d', color: '#ff4d4d' }}
+              onClick={() => deleteExistingRestaurant(state.selectedRestaurant.id)}
+              disabled={state.creating}
+            >
+              {state.creating ? 'Removing...' : '🗑 Remove Restaurant'}
+            </Button>
           </div>
         </Modal.Body>
       </Modal>
