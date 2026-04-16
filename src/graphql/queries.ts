@@ -26,12 +26,20 @@ export const listRestaurants = `query ListRestaurants(
   }
 }
 `;
-export const listReviews = `query ListReviews(
+export const reviewsByRestaurantID = `query ReviewsByRestaurantID(
+  $restaurantID: ID!
+  $sortDirection: ModelSortDirection
   $filter: ModelReviewFilterInput
   $limit: Int
   $nextToken: String
 ) {
-  listReviews(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  reviewsByRestaurantID(
+    restaurantID: $restaurantID
+    sortDirection: $sortDirection
+    filter: $filter
+    limit: $limit
+    nextToken: $nextToken
+  ) {
     items {
       id
       restaurantID

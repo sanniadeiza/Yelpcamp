@@ -8,7 +8,7 @@ import { Button, Col, Container, Form, Row, Modal, Badge } from 'react-bootstrap
 import './App.css';
 import awsConfig from './aws-exports.js';
 import { createRestaurant, deleteRestaurant, createReview } from './graphql/mutations';
-import { listRestaurants, listReviews } from './graphql/queries';
+import { listRestaurants, reviewsByRestaurantID } from './graphql/queries';
 import { onCreateRestaurant, onDeleteRestaurant } from './graphql/subscriptions';
 
 import Header from './components/Header';
@@ -148,16 +148,14 @@ const App = () => {
     dispatch({ type: 'SET_REVIEW_LOADING', payload: true });
     try {
       const response = await API.graphql({
-        query: listReviews,
+        query: reviewsByRestaurantID,
         variables: {
-          filter: {
-            restaurantID: { eq: restaurantID }
-          },
-          limit: 10
+          restaurantID,
+          limit: 10,
         },
         authMode: 'API_KEY'
       });
-      dispatch({ type: 'SET_REVIEWS', payload: response.data.listReviews.items });
+      dispatch({ type: 'SET_REVIEWS', payload: response.data.reviewsByRestaurantID.items });
       dispatch({ type: 'SET_LIST_FETCH_ERROR', payload: null });
     } catch (err) {
       console.error('Error fetching reviews:', err);

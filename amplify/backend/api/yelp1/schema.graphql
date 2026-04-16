@@ -8,7 +8,7 @@ type Restaurant @model @auth(rules: [{ allow: public }]) {
 
 type Review @model @auth(rules: [{ allow: public }]) {
   id: ID!
-  restaurantID: ID! @index(name: "byRestaurant", sortKeyFields: ["createdAt"], queryField: "reviewsByRestaurantID")
+  restaurantID: ID! @index(name: "byRestaurant", queryField: "reviewsByRestaurantID")
   rating: Int!
   content: String!
   author: String!
