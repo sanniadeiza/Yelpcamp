@@ -1,6 +1,6 @@
 /* eslint-disable */
 // @ts-nocheck
-import Amplify, { API, graphqlOperation } from 'aws-amplify';
+import Amplify, { API, Auth, graphqlOperation } from 'aws-amplify';
 import { withAuthenticator } from 'aws-amplify-react';
 import React, { useEffect, useReducer, useState } from 'react';
 import { Button, Col, Container, Form, Row, Modal, Badge } from 'react-bootstrap';
@@ -265,8 +265,8 @@ const App = () => {
     try {
       const { rating, content } = state.reviewFormData;
       // Get current user for author name
-      const user = await Amplify.Auth.currentAuthenticatedUser();
-      const author = user.username || 'Anonymous User';
+      const user = await Auth.currentAuthenticatedUser();
+      const author = user.username || user.attributes?.email || 'Anonymous User';
       
       await API.graphql({
         query: createReview,
