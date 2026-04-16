@@ -76,9 +76,10 @@ const App = () => {
   useEffect(() => {
     getRestaurantList();
 
-    const subscription = API.graphql(
-      graphqlOperation(onCreateRestaurant)
-    ).subscribe({
+    const subscription = API.graphql({
+      query: onCreateRestaurant,
+      authMode: 'API_KEY'
+    }).subscribe({
       next: (eventData) => {
         const payload = eventData.value.data.onCreateRestaurant;
         dispatch({ type: 'SUBSCRIPTION', payload });
@@ -109,13 +110,15 @@ const App = () => {
         };
       }
 
-      const response = await API.graphql(
-        graphqlOperation(listRestaurants, {
+      const response = await API.graphql({
+        query: listRestaurants,
+        variables: {
           filter: Object.keys(filter).length > 0 ? filter : null,
           limit: 12,
           nextToken,
-        })
-      );
+        },
+        authMode: 'API_KEY'
+      });
 
       const { items, nextToken: newNextToken } = response.data.listRestaurants;
 
@@ -153,6 +156,8 @@ const App = () => {
       });
       setShowModal(false);
       dispatch({ type: 'SET_CREATING', payload: false });
+      // Manual refresh to ensure data appears immediately
+      getRestaurantList();
     } catch (err) {
       console.error('Error creating restaurant:', err);
       dispatch({ type: 'SET_CREATING', payload: false });
