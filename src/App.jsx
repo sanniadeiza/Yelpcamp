@@ -266,7 +266,7 @@ const App = () => {
       const { rating, content } = state.reviewFormData;
       // Get current user for author name
       const user = await Auth.currentAuthenticatedUser();
-      const author = user.username || user.attributes?.email || 'Anonymous User';
+      const author = user.username || (user.attributes && user.attributes.email) || 'Anonymous User';
       
       await API.graphql({
         query: createReview,
