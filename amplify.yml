@@ -3,7 +3,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - nvm use 16 || nvm install 16 && nvm use 16
+        - nvm use 20 || nvm install 20 && nvm use 20
         - npm install
         - if [ ! -f src/aws-exports.js ]; then echo "const awsmobile = {}; export default awsmobile;" > src/aws-exports.js; fi
     build:
