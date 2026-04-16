@@ -25,7 +25,7 @@ const finalConfig = {
   aws_user_pools_web_client_id: process.env.REACT_APP_USER_CLIENT_ID || awsConfig.aws_user_pools_web_client_id,
   aws_appsync_graphqlEndpoint: process.env.REACT_APP_GRAPHQL_ENDPOINT || awsConfig.aws_appsync_graphqlEndpoint,
   aws_appsync_region: process.env.REACT_APP_REGION || awsConfig.aws_appsync_region || 'eu-north-1',
-  aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS',
+  aws_appsync_authenticationType: process.env.REACT_APP_AUTH_TYPE || awsConfig.aws_appsync_authenticationType || 'AMAZON_COGNITO_USER_POOLS',
 };
 
 Amplify.configure(finalConfig);
@@ -38,6 +38,8 @@ const initialState = {
   loading: false,
   selectedRestaurant: null,
   isMapView: false,
+  creating: false,
+  error: null,
 };
 
 const reducer = (state, action) => {
@@ -58,6 +60,10 @@ const reducer = (state, action) => {
       return { ...state, selectedRestaurant: action.payload };
     case 'TOGGLE_MAP_VIEW':
       return { ...state, isMapView: !state.isMapView };
+    case 'SET_CREATING':
+      return { ...state, creating: action.payload };
+    case 'SET_ERROR':
+      return { ...state, error: action.payload };
     default:
       return state;
   }
@@ -148,13 +154,18 @@ const App = () => {
   const createNewRestaurant = async (e) => {
     e.preventDefault();
     const { name, description, city } = state.formData;
+    dispatch({ type: 'SET_CREATING', payload: true });
+    dispatch({ type: 'SET_ERROR', payload: null });
     try {
       await API.graphql(
         graphqlOperation(createRestaurant, { input: { name, description, city } })
       );
       setShowModal(false);
-    } catch (e) {
-      console.error('Error creating restaurant:', e);
+      dispatch({ type: 'SET_CREATING', payload: false });
+    } catch (err) {
+      console.error('Error creating restaurant:', err);
+      dispatch({ type: 'SET_CREATING', payload: false });
+      dispatch({ type: 'SET_ERROR', payload: err.errors ? err.errors[0].message : err.message || 'Failed to create restaurant' });
     }
   };
 
@@ -266,6 +277,7 @@ const App = () => {
         </Modal.Header>
         <Modal.Body className="p-4">
           <Form onSubmit={createNewRestaurant}>
+            {state.error && <div className="alert alert-danger py-2 px-3 mb-4" style={{ fontSize: '0.9rem', borderRadius: '10px' }}>{state.error}</div>}
             <Form.Group className="mb-3" controlId="formDataName">
               <Form.Label>Restaurant Name</Form.Label>
               <Form.Control
@@ -298,8 +310,8 @@ const App = () => {
               />
             </Form.Group>
             <div className="d-grid">
-              <Button type="submit" className="premium-btn">
-                Create Restaurant
+              <Button type="submit" className="premium-btn" disabled={state.creating}>
+                {state.creating ? 'Creating...' : 'Create Restaurant'}
               </Button>
             </div>
           </Form>
