@@ -18,7 +18,6 @@ export const listRestaurants = `query ListRestaurants(
   listRestaurants(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
-      clientId
       name
       description
       city
