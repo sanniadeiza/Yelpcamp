@@ -4,7 +4,6 @@
 export const getRestaurant = `query GetRestaurant($id: ID!) {
   getRestaurant(id: $id) {
     id
-    clientId
     name
     description
     city

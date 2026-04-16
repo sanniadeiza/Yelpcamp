@@ -4,7 +4,6 @@
 export const onCreateRestaurant = `subscription OnCreateRestaurant {
   onCreateRestaurant {
     id
-    clientId
     name
     description
     city
@@ -14,7 +13,6 @@ export const onCreateRestaurant = `subscription OnCreateRestaurant {
 export const onUpdateRestaurant = `subscription OnUpdateRestaurant {
   onUpdateRestaurant {
     id
-    clientId
     name
     description
     city
@@ -24,7 +22,6 @@ export const onUpdateRestaurant = `subscription OnUpdateRestaurant {
 export const onDeleteRestaurant = `subscription OnDeleteRestaurant {
   onDeleteRestaurant {
     id
-    clientId
     name
     description
     city

@@ -7,7 +7,6 @@ export const createRestaurant = `mutation CreateRestaurant(
 ) {
   createRestaurant(input: $input, condition: $condition) {
     id
-    clientId
     name
     description
     city
@@ -20,7 +19,6 @@ export const updateRestaurant = `mutation UpdateRestaurant(
 ) {
   updateRestaurant(input: $input, condition: $condition) {
     id
-    clientId
     name
     description
     city
@@ -33,7 +31,6 @@ export const deleteRestaurant = `mutation DeleteRestaurant(
 ) {
   deleteRestaurant(input: $input, condition: $condition) {
     id
-    clientId
     name
     description
     city
