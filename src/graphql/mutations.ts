@@ -37,3 +37,17 @@ export const deleteRestaurant = `mutation DeleteRestaurant(
   }
 }
 `;
+export const createReview = `mutation CreateReview(
+  $input: CreateReviewInput!
+  $condition: ModelReviewConditionInput
+) {
+  createReview(input: $input, condition: $condition) {
+    id
+    restaurantID
+    rating
+    content
+    author
+    createdAt
+  }
+}
+`;
