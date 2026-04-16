@@ -29,6 +29,7 @@ const initialState = {
   isMapView: false,
   creating: false,
   error: null,
+  fetchError: null,
 };
 
 const reducer = (state, action) => {
@@ -53,6 +54,8 @@ const reducer = (state, action) => {
       return { ...state, creating: action.payload };
     case 'SET_ERROR':
       return { ...state, error: action.payload };
+    case 'SET_FETCH_ERROR':
+      return { ...state, fetchError: action.payload };
     default:
       return state;
   }
@@ -120,15 +123,23 @@ const App = () => {
         authMode: 'API_KEY'
       });
 
+      if (response.errors && response.errors.length > 0) {
+        dispatch({ type: 'SET_FETCH_ERROR', payload: response.errors[0].message });
+        dispatch({ type: 'SET_LOADING', payload: false });
+        return;
+      }
+
       const { items, nextToken: newNextToken } = response.data.listRestaurants;
+      dispatch({ type: 'SET_FETCH_ERROR', payload: null });
 
       if (nextToken) {
         dispatch({ type: 'APPEND_PAGE', payload: { items, nextToken: newNextToken } });
       } else {
         dispatch({ type: 'QUERY', payload: { items, nextToken: newNextToken } });
       }
-    } catch (e) {
-      console.error('Error fetching restaurants:', e);
+    } catch (err) {
+      console.error('Error fetching restaurants:', err);
+      dispatch({ type: 'SET_FETCH_ERROR', payload: err.errors ? err.errors[0].message : err.message || 'Failed to fetch restaurants' });
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
@@ -192,6 +203,16 @@ const App = () => {
             </Button>
           </div>
         </div>
+
+        {state.fetchError && (
+          <div className="alert alert-danger mx-auto mb-5 text-center" style={{ maxWidth: '600px', borderRadius: '15px', border: 'none', backgroundColor: '#fff5f5' }}>
+            <h5 className="mb-2" style={{ fontWeight: 700, color: '#e53e3e' }}>Fetch Error</h5>
+            <p className="mb-0" style={{ color: '#c53030' }}>{state.fetchError}</p>
+            <Button variant="link" onClick={() => getRestaurantList()} className="mt-2" style={{ color: '#e53e3e', textDecoration: 'none', fontWeight: 600 }}>
+              ↻ Try Again
+            </Button>
+          </div>
+        )}
 
         {/* Skeleton loader */}
         {state.loading && state.restaurants.length === 0 && (
