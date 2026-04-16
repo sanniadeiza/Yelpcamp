@@ -3,4 +3,13 @@ type Restaurant @model @auth(rules: [{ allow: public }]) {
   name: String!
   description: String!
   city: String!
+  reviews: [Review] @hasMany(indexName: "byRestaurant", fields: ["id"])
+}
+
+type Review @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  restaurantID: ID! @index(name: "byRestaurant")
+  rating: Int!
+  content: String!
+  author: String!
 }
